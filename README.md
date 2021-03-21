@@ -8,3 +8,4 @@ Simple pagination library for Ottoman.js ⚡
 - Write tests
 - Documentation
 - Rewrite with TS
+- Release v1 and Publish to npm ⚡⚡
