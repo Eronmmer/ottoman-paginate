@@ -1,6 +1,6 @@
 {
   "name": "ottoman-paginate",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A simple pagination library for Ottoman.js",
   "license": "MIT",
   "scripts": {
