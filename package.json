@@ -3,13 +3,26 @@
   "version": "0.0.1",
   "description": "A simple pagination library for Ottoman.js",
   "license": "MIT",
-	"scripts": {
-		"lint": "eslint . --ext .js --fix"
-	},
+  "scripts": {
+		"test":  "jest --forceExit",
+    "lint": "eslint . --ext .js --fix"
+  },
+	"jest": {
+		"testEnvironment": "node",
+		"coveragePathIgnorePatterns": [
+			"/node_modules/"
+		],
+		"testPathIgnorePatterns": [
+			"client"
+		]
+ 	},
   "devDependencies": {
+    "dotenv": "^8.2.0",
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-prettier": "^3.3.1",
+    "jest": "^26.6.3",
+    "ottoman": "^2.0.0-alpha.19",
     "prettier": "^2.2.1"
   }
 }

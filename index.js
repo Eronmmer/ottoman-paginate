@@ -12,11 +12,12 @@ const defaultOptions = {
     pagingCounter: "pagingCounter",
     hasPrevPage: "hasPrevPage",
     hasNextPage: "hasNextPage",
-    meta: null,
+    paginationMetaData: null,
   },
   limit: 10,
   select: "",
   pagination: true,
+  ottomanMetaData: true,
 };
 
 function paginate(filter, options, callback) {
@@ -36,6 +37,7 @@ function paginate(filter, options, callback) {
     lean,
     noCollection,
     populateMaxDeep,
+    ottomanMetaData,
   } = options;
 
   const customLabels = {
@@ -64,7 +66,7 @@ function paginate(filter, options, callback) {
   const labelPagingCounter = customLabels.pagingCounter;
   const labelHasPrevPage = customLabels.hasPrevPage;
   const labelHasNextPage = customLabels.hasNextPage;
-  const labelMeta = customLabels.meta;
+  const labelMeta = customLabels.paginationMetaData;
 
   if (Object.prototype.hasOwnProperty.call(options, "offset")) {
     offset = parseInt(options.offset, 10);
@@ -78,7 +80,7 @@ function paginate(filter, options, callback) {
     skip = offset;
   }
 
-  let countPromise = this.count(filter).exec();
+  let countPromise = this.count(filter);
 
   const findOptions = {
     consistency,
@@ -89,94 +91,84 @@ function paginate(filter, options, callback) {
     sort,
     select,
   };
-  // verify this later
-  let sanitizedFindOptions = {};
 
-  Object.entries(findOptions).forEach(([key, value], idx, array) => {
-    if (value !== undefined) {
-      sanitizedFindOptions[key] = value;
-    }
-    if (idx === array.length - 1 && pagination) {
-      sanitizedFindOptions["skip"] = skip;
-      sanitizedFindOptions["limit"] = limit;
-    }
-  });
+  if (limit && pagination) {
+    findOptions["skip"] = skip;
+    findOptions["limit"] = limit;
+  }
 
   if (limit) {
-    const dbQuery = this.find(filter, sanitizedFindOptions);
-
-    if (pagination) {
-      dbQuery.skip(skip);
-      dbQuery.limit(limit);
-    }
-
-    // exec?
-    docsPromise = dbQuery.exec();
+    docsPromise = this.find(filter, findOptions);
   }
 
   return Promise.all([countPromise, docsPromise])
     .then((values) => {
-      const [count, docs] = values;
-      const meta = {
+      const [count, { meta: ottomanMeta, rows: docs }] = values;
+      const paginationMeta = {
         [labelTotal]: count,
       };
 
       let result = {};
 
       if (typeof offset !== "undefined") {
-        meta.offset = offset;
+        paginationMeta.offset = offset;
         page = Math.ceil((offset + 1) / limit);
       }
 
       const pages = limit > 0 ? Math.ceil(count / limit) || 1 : null;
 
       // default values
-      meta[labelLimit] = count;
-      meta[labelTotalPages] = 1;
-      meta[labelPage] = page;
-      meta[labelPagingCounter] = (page - 1) * limit + 1;
-
-      meta[labelHasPrevPage] = false;
-      meta[labelHasNextPage] = false;
-      meta[labelPrevPage] = null;
-      meta[labelNextPage] = null;
+      paginationMeta[labelLimit] = count;
+      paginationMeta[labelTotalPages] = 1;
+      paginationMeta[labelPage] = page;
+      paginationMeta[labelPagingCounter] = (page - 1) * limit + 1;
+      paginationMeta[labelHasPrevPage] = false;
+      paginationMeta[labelHasNextPage] = false;
+      paginationMeta[labelPrevPage] = null;
+      paginationMeta[labelNextPage] = null;
 
       if (pagination) {
-        meta[labelLimit] = limit;
-        meta[labelTotalPages] = pages;
+        paginationMeta[labelLimit] = limit;
+        paginationMeta[labelTotalPages] = pages;
 
         if (page > 1) {
-          meta[labelHasPrevPage] = true;
-          meta[labelPrevPage] = page - 1;
+          paginationMeta[labelHasPrevPage] = true;
+          paginationMeta[labelPrevPage] = page - 1;
         }
 
         if (page < pages) {
-          meta[labelHasNextPage] = true;
-          meta[labelNextPage] = page + 1;
+          paginationMeta[labelHasNextPage] = true;
+          paginationMeta[labelNextPage] = page + 1;
         }
       }
 
       if (limit == 0) {
-        meta[labelLimit] = 0;
-        meta[labelTotalPages] = null;
-        meta[labelPage] = null;
-        meta[labelPagingCounter] = null;
-        meta[labelPrevPage] = null;
-        meta[labelNextPage] = null;
-        meta[labelHasPrevPage] = false;
-        meta[labelHasNextPage] = false;
+        paginationMeta[labelLimit] = 0;
+        paginationMeta[labelTotalPages] = null;
+        paginationMeta[labelPage] = null;
+        paginationMeta[labelPagingCounter] = null;
+        paginationMeta[labelPrevPage] = null;
+        paginationMeta[labelNextPage] = null;
+        paginationMeta[labelHasPrevPage] = false;
+        paginationMeta[labelHasNextPage] = false;
       }
 
       if (labelMeta) {
         result = {
           [labelDocs]: docs,
-          [labelMeta]: meta,
+          [labelMeta]: paginationMeta,
         };
       } else {
         result = {
           [labelDocs]: docs,
-          ...meta,
+          ...paginationMeta,
         };
+      }
+
+      result["meta"] = ottomanMeta;
+
+      if (ottomanMetaData === false) {
+        delete result.meta;
       }
 
       return isCallbackSpecified
