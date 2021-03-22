@@ -7,6 +7,15 @@
 		"test":  "jest --forceExit",
     "lint": "eslint . --ext .js --fix"
   },
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Eronmmer/ottoman-paginate.git"
+	},
+	"author": "Erons",
+	"bugs": {
+		"url": "https://github.com/Eronmmer/ottoman-paginate/issues"
+	},
+	"homepage": "https://github.com/Eronmmer/ottoman-paginate#readme",
 	"jest": {
 		"testEnvironment": "node",
 		"coveragePathIgnorePatterns": [
