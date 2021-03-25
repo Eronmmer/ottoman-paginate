@@ -7,11 +7,27 @@
 		"test":  "jest --forceExit",
     "lint": "eslint . --ext .js --fix"
   },
+	 "keywords": [
+    "pagination",
+    "plugin",
+    "metadata",
+    "library",
+    "ottoman",
+    "couchbase",
+    "n1ql",
+    "document",
+    "paginate",
+    "pagination-library",
+    "customizable-labels"
+  ],
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/Eronmmer/ottoman-paginate.git"
 	},
-	"author": "Erons",
+	"author": {
+		"name": "Erons",
+		"email": "eronmmer@gmail.com"
+	},
 	"bugs": {
 		"url": "https://github.com/Eronmmer/ottoman-paginate/issues"
 	},
