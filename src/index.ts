@@ -1,4 +1,64 @@
-"use strict";
+import {
+  ISelectType,
+  SortType,
+  SearchConsistency,
+  LogicalWhereExpr,
+  Schema,
+	FindOptions,
+	
+} from "ottoman";
+
+export interface CustomLabels {
+  totalDocs?: string;
+  limit?: string;
+  page?: string;
+  totalPages?: string;
+  docs?: string;
+  nextPage?: string;
+  prevPage?: string;
+  pagingCounter?: string;
+  hasPrevPage?: string;
+  hasNextPage?: string;
+  paginationMetaData?: string | null;
+}
+
+export interface PaginateOptions {
+  select?: string | ISelectType[] | string[];
+  sort?: Record<string, SortType>;
+  populate?: string | string[];
+  lean?: boolean;
+  consistency?: SearchConsistency;
+  noCollection?: boolean;
+  populateMaxDeep?: number;
+  /* If `ottomanMetaData` is set to false, it will not include the `meta` property that is usually present in the response object of Ottoman's `find()` function. (Default: `true`) */
+  ottomanMetaData?: boolean;
+  /* Use `offset` or `page` to set skip position */
+  offset?: number;
+  /* Use `offset` or `page` to set skip position */
+  page?: number;
+  limit?: number;
+  /* Add custom labels to manipulate the response data */
+  customLabels?: CustomLabels;
+  /* If pagination is set to `false`, it will return all docs without adding limit condition. (Default: `true`) */
+  pagination?: boolean;
+}
+
+export interface PaginateResult {
+  docs?: any[];
+  totalDocs?: number;
+  limit?: number;
+  hasPrevPage?: boolean;
+  hasNextPage?: boolean;
+  page?: number | null;
+  totalPages?: number | null;
+  offset?: number;
+  prevPage?: number | null;
+  nextPage?: number | null;
+  pagingCounter?: number | null;
+  meta?: any;
+  paginationMetaData?: any;
+  [customLabel: string]: any;
+}
 
 const defaultOptions = {
   customLabels: {
@@ -20,7 +80,11 @@ const defaultOptions = {
   ottomanMetaData: true,
 };
 
-function paginate(filter, options, callback) {
+export function paginate(
+  filter?: LogicalWhereExpr,
+  options?: PaginateOptions,
+  callback?: (err: any, result?: PaginateResult) => void,
+) {
   options = {
     ...defaultOptions,
     ...options,
@@ -46,12 +110,12 @@ function paginate(filter, options, callback) {
   };
 
   const limit =
-    parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 0;
+    parseInt(String(options.limit), 10) > 0
+      ? parseInt(String(options.limit), 10)
+      : 0;
 
-  const isCallbackSpecified = typeof callback === "function";
-
-  let offset;
-  let page;
+  let offset: number;
+  let page: number;
   let skip;
 
   let docsPromise = [];
@@ -69,10 +133,13 @@ function paginate(filter, options, callback) {
   const labelMeta = customLabels.paginationMetaData;
 
   if (Object.prototype.hasOwnProperty.call(options, "offset")) {
-    offset = parseInt(options.offset, 10);
+    offset = parseInt(String(options.offset), 10);
     skip = offset;
   } else if (Object.prototype.hasOwnProperty.call(options, "page")) {
-    page = parseInt(options.page, 10) < 1 ? 1 : parseInt(options.page, 10);
+    page =
+      parseInt(String(options.page), 10) < 1
+        ? 1
+        : parseInt(String(options.page), 10);
     skip = (page - 1) * limit;
   } else {
     offset = 0;
@@ -80,9 +147,10 @@ function paginate(filter, options, callback) {
     skip = offset;
   }
 
+  // @ts-ignore
   let countPromise = this.count(filter);
 
-  const findOptions = {
+  const findOptions: FindOptions = {
     consistency,
     lean,
     noCollection,
@@ -98,17 +166,18 @@ function paginate(filter, options, callback) {
   }
 
   if (limit) {
+    // @ts-ignore
     docsPromise = this.find(filter, findOptions);
   }
 
   return Promise.all([countPromise, docsPromise])
-    .then((values) => {
+    .then((values): void | PaginateResult | Promise<PaginateResult> => {
       const [count, { meta: ottomanMeta, rows: docs }] = values;
       const paginationMeta = {
         [labelTotal]: count,
       };
 
-      let result = {};
+      let result: PaginateResult = {};
 
       if (typeof offset !== "undefined") {
         paginationMeta.offset = offset;
@@ -136,7 +205,7 @@ function paginate(filter, options, callback) {
           paginationMeta[labelPrevPage] = page - 1;
         }
 
-        if (page < pages) {
+        if (page < Number(pages)) {
           paginationMeta[labelHasNextPage] = true;
           paginationMeta[labelNextPage] = page + 1;
         }
@@ -171,16 +240,17 @@ function paginate(filter, options, callback) {
         delete result.meta;
       }
 
-      return isCallbackSpecified
+      return typeof callback === "function"
         ? callback(null, result)
         : Promise.resolve(result);
     })
     .catch((error) => {
-      return isCallbackSpecified ? callback(error) : Promise.reject(error);
+      return typeof callback === "function"
+        ? callback(error)
+        : Promise.reject(error);
     });
 }
 
-module.exports = (schema) => {
+export default (schema: Schema) => {
   schema.statics.paginate = paginate;
 };
-module.exports.paginate = paginate;

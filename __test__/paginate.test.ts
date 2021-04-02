@@ -1,11 +1,10 @@
-"use strict";
-
-const dotenv = require("dotenv");
+import dotenv from "dotenv";
 dotenv.config();
-const { Schema, model } = require("ottoman");
-const ottomanPaginate = require("../index");
+import { Schema, model } from "ottoman";
+import { ModelTypes } from "ottoman/lib/types/model/model.types";
+import ottomanPaginate, { PaginateResult } from "../src/index";
 
-const createDocuments = async (modelName) => {
+const createDocuments = async (modelName: ModelTypes) => {
   for (let i = 1; i <= 10; i++) {
     let item = new modelName({
       name: Math.random().toString(36).substring(7),
@@ -36,7 +35,7 @@ describe("Test ottoman-paginate plugin", () => {
     CatSchema.plugin(ottomanPaginate);
     const Cat = model("Cat", CatSchema);
 
-    Cat.paginate({}, {}, function (err, result) {
+    Cat.paginate({}, {}, function (err: any, result: PaginateResult) {
       expect(err).toBe(null);
       expect(result instanceof Object).toBe(true);
       Cat.dropCollection();
@@ -57,8 +56,8 @@ describe("Test ottoman-paginate plugin", () => {
       page: 4,
     };
 
-    Cat.paginate({}, options).then((result) => {
-      expect(result.docs.length).toBe(2);
+    Cat.paginate({}, options).then((result: PaginateResult) => {
+      expect(result!.docs!.length).toBe(2);
       expect(result.totalDocs).toBe(10);
       expect(result.limit).toBe(2);
       expect(result.page).toBe(4);
@@ -86,8 +85,8 @@ describe("Test ottoman-paginate plugin", () => {
       page: 1,
     };
 
-    Cat.paginate({}, options).then((result) => {
-      expect(result.docs.length).toBe(10);
+    Cat.paginate({}, options).then((result: PaginateResult) => {
+      expect(result!.docs!.length).toBe(10);
       expect(result.totalDocs).toBe(10);
       expect(result.limit).toBe(20);
       expect(result.page).toBe(1);
@@ -115,8 +114,8 @@ describe("Test ottoman-paginate plugin", () => {
       page: 1,
     };
 
-    Cat.paginate({}, options).then((result) => {
-      expect(result.docs.length).toBe(2);
+    Cat.paginate({}, options).then((result: PaginateResult) => {
+      expect(result!.docs!.length).toBe(2);
       expect(result.totalDocs).toBe(10);
       expect(result.limit).toBe(2);
       expect(result.page).toBe(1);
@@ -144,8 +143,8 @@ describe("Test ottoman-paginate plugin", () => {
       page: 5,
     };
 
-    Cat.paginate({}, options).then((result) => {
-      expect(result.docs.length).toBe(2);
+    Cat.paginate({}, options).then((result: PaginateResult) => {
+      expect(result!.docs!.length).toBe(2);
       expect(result.totalDocs).toBe(10);
       expect(result.limit).toBe(2);
       expect(result.page).toBe(5);
@@ -173,8 +172,8 @@ describe("Test ottoman-paginate plugin", () => {
       offset: 9,
     };
 
-    Cat.paginate({}, options).then((result) => {
-      expect(result.docs.length).toBe(2);
+    Cat.paginate({}, options).then((result: PaginateResult) => {
+      expect(result!.docs!.length).toBe(2);
       expect(result.totalDocs).toBe(10);
       expect(result.limit).toBe(2);
       expect(result.page).toBe(5);
@@ -201,8 +200,8 @@ describe("Test ottoman-paginate plugin", () => {
       limit: 0,
     };
 
-    Cat.paginate({}, options).then((result) => {
-      expect(result.docs.length).toBe(0);
+    Cat.paginate({}, options).then((result: PaginateResult) => {
+      expect(result!.docs!.length).toBe(0);
       expect(result.totalDocs).toBe(10);
       expect(result.limit).toBe(0);
       expect(result.page).toBe(null);
@@ -236,8 +235,8 @@ describe("Test ottoman-paginate plugin", () => {
       customLabels: myCustomLabels,
     };
 
-    Cat.paginate({}, options).then((result) => {
-      expect(result.docs.length).toBe(2);
+    Cat.paginate({}, options).then((result: PaginateResult) => {
+      expect(result!.docs!.length).toBe(2);
       expect(result.totalDocs).toBe(10);
       expect(result.limit).toBe(2);
       expect(result.page).toBe(4);
@@ -279,7 +278,7 @@ describe("Test ottoman-paginate plugin", () => {
       customLabels: myCustomLabels,
     };
 
-    Cat.paginate({}, options).then((result) => {
+    Cat.paginate({}, options).then((result: PaginateResult) => {
       expect(result.itemsList.length).toBe(2);
       expect(result.itemCount).toBe(10);
       expect(result.perPage).toBe(2);
@@ -307,8 +306,8 @@ describe("Test ottoman-paginate plugin", () => {
       pagination: false,
     };
 
-    Cat.paginate({}, options).then((result) => {
-      expect(result.docs.length).toBe(10);
+    Cat.paginate({}, options).then((result: PaginateResult) => {
+      expect(result!.docs!.length).toBe(10);
       expect(result.totalDocs).toBe(10);
       expect(result.limit).toBe(10);
       expect(result.page).toBe(1);
