@@ -66,7 +66,7 @@ Promise fulfilled with object having properties:
 - `offset` {Number} - Only if specified or default `page`/`offset` values were used
 - `prevPage` {Number} - Previous page number if available or `null`
 - `nextPage` {Number} - Next page number if available or `null`
-- `pagingCounter` {Number} -  The starting index/serial/chronological number of first document in current page. (Eg: if page=2 and limit=10, then pagingCounter will be 11)
+- `pagingCounter` {Number} -  The starting index number of the first document in the current page.
 - `meta` {Object} - Request meta data from Ottoman.
 - `paginationMetaData` {Object} - Object of pagination meta data (Disabled by default).
 
