@@ -21,7 +21,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Please complete the following information:**
- - OS: [e.g. Windows]
+ - OS: [e.g. MacOS]
  - Node version [e.g. 12.x, 14.x]
  - Couchbase version [e.g. 7.0.0]
 
